@@ -1,45 +1,58 @@
-name: "Terraform Apply"
+name: Terraform Deployment
 
 on:
   push:
     branches:
-      - main
-
-env:
-  TF_CLOUD_ORGANIZATION: "zak"
-  TF_API_TOKEN: "${{ secrets.TF_API_TOKEN }}"
-  TF_WORKSPACE: "learn-terraform-github-actions"
-  CONFIG_DIRECTORY: "./"
+      - main  # Adjust the branch name as needed
 
 jobs:
   terraform:
-    if: github.repository != 'hashicorp-education/learn-terraform-github-actions'
-    name: "Terraform Apply"
+    name: Deploy Infrastructure
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
+    
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+    
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
+      with:
+        terraform_version: 1.0.0  # Adjust the Terraform version as needed
+    
+    - name: Terraform Init
+      run: terraform init
+      
+    - name: Terraform Plan
+      run: terraform plan
+    
+    - name: Terraform Apply
+      run: terraform apply -auto-approve
 
-      - name: Upload Configuration
-        uses: hashicorp/tfc-workflows-github/actions/upload-configuration@v1.0.0
-        id: apply-upload
-        with:
-          workspace: ${{ env.TF_WORKSPACE }}
-          directory: ${{ env.CONFIG_DIRECTORY }}
+    # Optionally, you can add steps for testing your infrastructure or application
+    
+    # - name: Run Tests
+    #   run: |
+    #     # Add your testing commands here
 
-      - name: Create Apply Run
-        uses: hashicorp/tfc-workflows-github/actions/create-run@v1.0.0
-        id: apply-run
-        with:
-          workspace: ${{ env.TF_WORKSPACE }}
-          configuration_version: ${{ steps.apply-upload.outputs.configuration_version_id }}
+    # - name: Deploy Application
+    #   run: |
+    #     # Add commands to deploy your application (if applicable)
 
-      - name: Apply
-        uses: hashicorp/tfc-workflows-github/actions/apply-run@v1.0.0
-        if: fromJSON(steps.apply-run.outputs.payload).data.attributes.actions.IsConfirmable
-        id: apply
-        with:
-          run: ${{ steps.apply-run.outputs.run_id }}
-          comment: "Apply Run from GitHub Actions CI ${{ github.sha }}"
+    # - name: Run Integration Tests
+    #   run: |
+    #     # Add commands to run integration tests (if applicable)
+
+    # - name: Deploy to Production
+    #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    #   run: |
+    #     # Add commands to deploy to production environment
+
+    # - name: Notify Deployment Status
+    #   if: always()
+    #   run: |
+    #     # Add commands to send notifications about deployment status
+
+    # You can also add steps to destroy the infrastructure if needed
+    # - name: Destroy Infrastructure
+    #   if: always()
+    #   run: terraform destroy -auto-approve

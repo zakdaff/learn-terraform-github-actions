@@ -1,0 +1,58 @@
+name: Terraform Deployment
+
+on:
+  push:
+    branches:
+      - main  # Adjust the branch name as needed
+
+jobs:
+  terraform:
+    name: Deploy Infrastructure
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+    
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
+      with:
+        terraform_version: 1.0.0  # Adjust the Terraform version as needed
+    
+    - name: Terraform Init
+      run: terraform init
+      
+    - name: Terraform Plan
+      run: terraform plan
+    
+    - name: Terraform Apply
+      run: terraform apply -auto-approve
+
+    # Optionally, you can add steps for testing your infrastructure or application
+    
+    # - name: Run Tests
+    #   run: |
+    #     # Add your testing commands here
+
+    # - name: Deploy Application
+    #   run: |
+    #     # Add commands to deploy your application (if applicable)
+
+    # - name: Run Integration Tests
+    #   run: |
+    #     # Add commands to run integration tests (if applicable)
+
+    # - name: Deploy to Production
+    #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    #   run: |
+    #     # Add commands to deploy to production environment
+
+    # - name: Notify Deployment Status
+    #   if: always()
+    #   run: |
+    #     # Add commands to send notifications about deployment status
+
+    # You can also add steps to destroy the infrastructure if needed
+    # - name: Destroy Infrastructure
+    #   if: always()
+    #   run: terraform destroy -auto-approve
